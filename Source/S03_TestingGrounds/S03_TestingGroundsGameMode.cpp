@@ -2,7 +2,7 @@
 
 #include "S03_TestingGroundsGameMode.h"
 #include "S03_TestingGroundsHUD.h"
-#include "S03_TestingGroundsCharacter.h"
+#include "Player/FirstPersonCharacter.h"
 #include "UObject/ConstructorHelpers.h"
 
 AS03_TestingGroundsGameMode::AS03_TestingGroundsGameMode()
