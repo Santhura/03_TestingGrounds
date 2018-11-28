@@ -40,7 +40,7 @@ void AMannequin::BeginPlay()
 	gun = GetWorld()->SpawnActor<AGun>( gunBlueprint );
 	gun->AttachToComponent(FParms, FAttachmentTransformRules( EAttachmentRule::SnapToTarget, true ), TEXT( "GripPoint" ) );
 
-	gun->AnimInstance = FParms->GetAnimInstance();
+	gun->AnimInstance = GetMesh()->GetAnimInstance();
 
 	if( InputComponent != NULL )
 	{
