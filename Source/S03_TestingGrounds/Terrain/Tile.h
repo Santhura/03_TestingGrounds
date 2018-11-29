@@ -16,7 +16,8 @@ public:
 	ATile();
 
 	UFUNCTION( BlueprintCallable, Category = "Input" )
-	void PlaceActors( TSubclassOf<AActor> toSpawn, int minSpawn, int maxSpawn );
+	void PlaceActors( TSubclassOf<AActor> toSpawn, int minSpawn = 1, int maxSpawn = 1, float radius = 500, float minScale = 1, float maxScale = 1);
+
 
 
 protected:
@@ -27,6 +28,9 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	
-	
+private:
+
+	bool CanSpawnAtLocation( FVector location, float radius );
+	bool FindEmpyLocation(FVector& outLocation, float radius );
+	void PlaceActor( TSubclassOf<AActor> toSpawn, FVector spawnPoint, float rotation, float scale );
 };
