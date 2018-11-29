@@ -16,7 +16,8 @@ public:
 	ATile();
 
 	UFUNCTION( BlueprintCallable, Category = "Input" )
-	void PlaceActors();
+	void PlaceActors( TSubclassOf<AActor> toSpawn, int minSpawn, int maxSpawn );
+
 
 protected:
 	// Called when the game starts or when spawned
