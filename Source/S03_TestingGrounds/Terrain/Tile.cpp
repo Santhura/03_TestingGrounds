@@ -3,6 +3,8 @@
 #include "Tile.h"
 #include "Engine/World.h"
 #include "DrawDebugHelpers.h"
+#include "EngineUtils.h"
+#include "ActorPool.h"
 
 
 // Sets default values
@@ -10,6 +12,13 @@ ATile::ATile()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+}
+
+void ATile::SetPool( UActorPool * inPool )
+{
+	UE_LOG( LogTemp, Warning, TEXT( "Setting pool %s" ), *( inPool->GetName() ) )
+	pool = inPool;
 
 }
 
@@ -69,6 +78,8 @@ void ATile::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 }
+
+
 
 bool ATile::CanSpawnAtLocation( FVector location, float radius )
 {
