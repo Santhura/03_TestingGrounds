@@ -20,4 +20,7 @@ public:
 	void Return( AActor* actorToReturn );
 	void Add( AActor * actorToAdd );
 	
+private:
+	TArray<AActor*> pool;
+
 };

@@ -25,6 +25,15 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type endPlayReason) override;
+
+	UPROPERTY( EditDefaultsOnly, Category = "Spawning" )
+		FVector minExtent;
+	UPROPERTY( EditDefaultsOnly, Category = "Spawning" )
+		FVector maxExtent;
+
+	UPROPERTY( EditDefaultsOnly, Category = "Navigation" )
+		FVector navigationBoundsOffset;
 
 public:	
 	// Called every frame
@@ -33,11 +42,15 @@ public:
 	UFUNCTION( BlueprintCallable, Category = "Pool" )
 	void SetPool( UActorPool* pool );
 
+
 private:
 
 	UActorPool* pool;
+	AActor* navMeshBoundsVolume;
 
 	bool CanSpawnAtLocation( FVector location, float radius );
 	bool FindEmpyLocation(FVector& outLocation, float radius );
 	void PlaceActor( TSubclassOf<AActor> toSpawn, FVector spawnPoint, float rotation, float scale );
+	void PositionNavMeshBoundsVolume();
+
 };

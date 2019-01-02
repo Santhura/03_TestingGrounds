@@ -5,6 +5,8 @@
 #include "DrawDebugHelpers.h"
 #include "EngineUtils.h"
 #include "ActorPool.h"
+#include "AI/Navigation/NavigationSystem.h"
+
 
 
 // Sets default values
@@ -12,7 +14,9 @@ ATile::ATile()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
+	minExtent = FVector( 0, -2000, 0 );
+	maxExtent = FVector( 4000, 2000, 0 );
+	navigationBoundsOffset = FVector( 2000, 0, 0 );
 }
 
 void ATile::SetPool( UActorPool * inPool )
@@ -20,6 +24,23 @@ void ATile::SetPool( UActorPool * inPool )
 	UE_LOG( LogTemp, Warning, TEXT( "Setting pool %s" ), *( inPool->GetName() ) )
 	pool = inPool;
 
+	PositionNavMeshBoundsVolume();
+
+}
+
+void ATile::PositionNavMeshBoundsVolume()
+{
+	navMeshBoundsVolume = pool->CheckOut();
+	if( navMeshBoundsVolume == nullptr )
+	{
+		UE_LOG( LogTemp, Error, TEXT( "[%s] Not enough actors in pool" ), *GetName() );
+			return;
+	}
+
+	UE_LOG( LogTemp, Warning, TEXT( "[%s] checked out: {%s}" ), *GetName(), *navMeshBoundsVolume->GetName() );
+
+	navMeshBoundsVolume->SetActorLocation( GetActorLocation() + navigationBoundsOffset );
+	GetWorld()->GetNavigationSystem()->Build();
 }
 
 void ATile::PlaceActors(TSubclassOf<AActor> toSpawn, int minSpawn, int maxSpawn, float radius, float minScale, float maxScale )
@@ -41,9 +62,7 @@ void ATile::PlaceActors(TSubclassOf<AActor> toSpawn, int minSpawn, int maxSpawn,
 
 bool ATile::FindEmpyLocation( FVector& outLocation, float radius )
 {
-	FVector minPoint = FVector(0, -2000, 0);
-	FVector maxPoint = FVector(4000, 2000, 0);
-	FBox bounds ( minPoint, maxPoint );
+	FBox bounds ( minExtent, maxExtent);
 	const int MAX_ATTEMPS = 100;
 	for( size_t i = 0; i < MAX_ATTEMPS; i++ )
 	{
@@ -72,14 +91,19 @@ void ATile::BeginPlay()
 	Super::BeginPlay();
 }
 
+void ATile::EndPlay( const EEndPlayReason::Type endPlayReason )
+{
+	Super::EndPlay(endPlayReason);
+	pool->Return( navMeshBoundsVolume );
+
+}
+
 // Called every frame
 void ATile::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
 }
-
-
 
 bool ATile::CanSpawnAtLocation( FVector location, float radius )
 {
