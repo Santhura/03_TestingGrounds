@@ -43,22 +43,40 @@ void ATile::PositionNavMeshBoundsVolume()
 	GetWorld()->GetNavigationSystem()->Build();
 }
 
-void ATile::PlaceActors(TSubclassOf<AActor> toSpawn, int minSpawn, int maxSpawn, float radius, float minScale, float maxScale )
+
+
+void ATile::PlaceActors(TSubclassOf<AActor> toSpawn, FActorProperties actorProperties )
 {
-	int numberToSpawn = FMath::RandRange( minSpawn, maxSpawn );
+	TArray<FSpawnPosition> spawnPositions = RandomSpawnPositions( actorProperties );
+
+	for( FSpawnPosition spawnPosition : spawnPositions )
+	{
+		PlaceActor( toSpawn, spawnPosition );
+	}
+}
+
+TArray<FSpawnPosition> ATile::RandomSpawnPositions( FActorProperties actorProperties )
+{
+	TArray<FSpawnPosition> spawnPositions;
+
+	int numberToSpawn = FMath::RandRange( actorProperties.minSpawn, actorProperties.maxSpawn );
 
 	for( size_t i = 0; i < numberToSpawn; i++ )
 	{
-		FVector spawnPoint;
-		float randomScale = FMath::RandRange( minScale, maxScale);
-		bool found = FindEmpyLocation( spawnPoint, radius * randomScale );
-		if(found)
+		FSpawnPosition spawnPosition;
+		spawnPosition.scale = FMath::RandRange( actorProperties.minScale, actorProperties.maxScale );
+		bool found = FindEmpyLocation( spawnPosition.location, actorProperties.radius * spawnPosition.scale );
+		if( found )
 		{
-			float randomRotation = FMath::RandRange( -180.f, 180.f );
-			PlaceActor( toSpawn, spawnPoint, randomRotation, randomScale );
+			spawnPosition.rotation = FMath::RandRange( -180.f, 180.f );
+			spawnPositions.Add( spawnPosition );
 		}
 	}
+
+	return spawnPositions;
 }
+
+
 
 bool ATile::FindEmpyLocation( FVector& outLocation, float radius )
 {
@@ -76,13 +94,13 @@ bool ATile::FindEmpyLocation( FVector& outLocation, float radius )
 	return false;
 }
 
-void ATile::PlaceActor( TSubclassOf<AActor> toSpawn, FVector spawnPoint, float rotation, float scale )
+void ATile::PlaceActor( TSubclassOf<AActor> toSpawn, FSpawnPosition spawnPosition )
 {
 	AActor* spawned = GetWorld()->SpawnActor<AActor>( toSpawn );
-	spawned->SetActorRelativeLocation( spawnPoint );
+	spawned->SetActorRelativeLocation( spawnPosition.location );
 	spawned->AttachToActor( this, FAttachmentTransformRules( EAttachmentRule::KeepRelative, false ) );
-	spawned->SetActorRotation( FRotator( 0, rotation, 0 ) );
-	spawned->SetActorScale3D(FVector(scale) );
+	spawned->SetActorRotation( FRotator( 0, spawnPosition.rotation, 0 ) );
+	spawned->SetActorScale3D(FVector(spawnPosition.scale) );
 }
 
 // Called when the game starts or when spawned

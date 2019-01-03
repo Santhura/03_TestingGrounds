@@ -6,6 +6,32 @@
 #include "GameFramework/Actor.h"
 #include "Tile.generated.h"
 
+USTRUCT()
+struct FSpawnPosition
+{
+	GENERATED_USTRUCT_BODY()
+	FVector location;
+	float rotation;
+	float scale;
+};
+
+USTRUCT( BlueprintType )
+struct FActorProperties
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Spawning" )
+	int minSpawn = 1;
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Spawning" )
+	int maxSpawn = 1;
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Spawning" )
+	float radius = 500;
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Spawning" )
+	float minScale = 1;
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Spawning" )
+	float maxScale = 1;
+};
+
 class UActorPool;
 
 UCLASS()
@@ -18,22 +44,20 @@ public:
 	ATile();
 
 	UFUNCTION( BlueprintCallable, Category = "Input" )
-	void PlaceActors( TSubclassOf<AActor> toSpawn, int minSpawn = 1, int maxSpawn = 1, float radius = 500, float minScale = 1, float maxScale = 1);
-
-
-
+	void PlaceActors( TSubclassOf<AActor> toSpawn, FActorProperties actorProperties);
+	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type endPlayReason) override;
 
 	UPROPERTY( EditDefaultsOnly, Category = "Spawning" )
-		FVector minExtent;
+	FVector minExtent;
 	UPROPERTY( EditDefaultsOnly, Category = "Spawning" )
-		FVector maxExtent;
+	FVector maxExtent;
 
 	UPROPERTY( EditDefaultsOnly, Category = "Navigation" )
-		FVector navigationBoundsOffset;
+	FVector navigationBoundsOffset;
 
 public:	
 	// Called every frame
@@ -49,8 +73,8 @@ private:
 	AActor* navMeshBoundsVolume;
 
 	bool CanSpawnAtLocation( FVector location, float radius );
+	TArray<FSpawnPosition> RandomSpawnPositions( FActorProperties actorProperties );
 	bool FindEmpyLocation(FVector& outLocation, float radius );
-	void PlaceActor( TSubclassOf<AActor> toSpawn, FVector spawnPoint, float rotation, float scale );
+	void PlaceActor( TSubclassOf<AActor> toSpawn, FSpawnPosition spawnPosition);
 	void PositionNavMeshBoundsVolume();
-
 };
