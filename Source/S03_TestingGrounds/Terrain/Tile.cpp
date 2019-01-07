@@ -42,8 +42,6 @@ void ATile::PositionNavMeshBoundsVolume()
 
 	navMeshBoundsVolume->SetActorLocation( GetActorLocation() + navigationBoundsOffset );
 	GetWorld()->GetNavigationSystem()->Build();
-
-	
 }
 
 void ATile::PlaceActors(TSubclassOf<AActor> toSpawn, FActorProperties actorProperties )

@@ -77,7 +77,6 @@ private:
 	bool isTileConquered = false;
 
 	bool CanSpawnAtLocation( FVector location, float radius );
-	TArray<FSpawnPosition> RandomSpawnPositions( FActorProperties actorProperties );
 	bool FindEmpyLocation(FVector& outLocation, float radius );
 
 	template<class T>

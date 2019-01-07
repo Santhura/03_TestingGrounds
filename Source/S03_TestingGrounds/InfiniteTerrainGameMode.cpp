@@ -35,11 +35,15 @@ void AInfiniteTerrainGameMode::PopulateBoundsVolumePool()
 void AInfiniteTerrainGameMode::NewNewTileConquered()
 {
 	score++;
-	UE_LOG( LogTemp, Warning, TEXT( "Score: %d" ), score )
 }
 
 void AInfiniteTerrainGameMode::AddToPool( ANavMeshBoundsVolume * volumeToAdd )
 {
 	navMeshBoundsVolumePool->Add( volumeToAdd );
+}
+
+int32 AInfiniteTerrainGameMode::GetScore() const
+{
+	return score;
 }
 
