@@ -22,6 +22,10 @@ public:
 	UFUNCTION( BlueprintCallable, Category = "Bounds Pool" )
 	void PopulateBoundsVolumePool();
 
+	int32 score = 0;
+
+	UFUNCTION()
+	void NewNewTileConquered();
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Pool" )

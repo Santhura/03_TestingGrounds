@@ -43,8 +43,11 @@ public:
 	// Sets default values for this actor's properties
 	ATile();
 
-	UFUNCTION( BlueprintCallable, Category = "Input" )
+	UFUNCTION( BlueprintCallable, Category = "Spawning" )
 	void PlaceActors( TSubclassOf<AActor> toSpawn, FActorProperties actorProperties);
+
+	UFUNCTION( BlueprintCallable, Category = "Spawning" )
+	void PlaceAIPawns( TSubclassOf<APawn> toSpawn, FActorProperties actorProperties );
 	
 protected:
 	// Called when the game starts or when spawned
@@ -71,10 +74,20 @@ private:
 
 	UActorPool* pool;
 	AActor* navMeshBoundsVolume;
+	bool isTileConquered = false;
 
 	bool CanSpawnAtLocation( FVector location, float radius );
 	TArray<FSpawnPosition> RandomSpawnPositions( FActorProperties actorProperties );
 	bool FindEmpyLocation(FVector& outLocation, float radius );
+
+	template<class T>
+	void RandomlyPlaceActors( TSubclassOf<T> toSpawn, FActorProperties actorProperties );
+
+
 	void PlaceActor( TSubclassOf<AActor> toSpawn, FSpawnPosition spawnPosition);
+	void PlaceActor( TSubclassOf<APawn> toSpawn, FSpawnPosition spawnPosition );
 	void PositionNavMeshBoundsVolume();
+
+	UFUNCTION( BlueprintCallable, Category = "Score" )
+	void TileConquered();
 };

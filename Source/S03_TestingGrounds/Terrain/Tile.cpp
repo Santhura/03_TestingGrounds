@@ -6,6 +6,7 @@
 #include "EngineUtils.h"
 #include "ActorPool.h"
 #include "AI/Navigation/NavigationSystem.h"
+#include "InfiniteTerrainGameMode.h"
 
 
 
@@ -41,24 +42,23 @@ void ATile::PositionNavMeshBoundsVolume()
 
 	navMeshBoundsVolume->SetActorLocation( GetActorLocation() + navigationBoundsOffset );
 	GetWorld()->GetNavigationSystem()->Build();
+
+	
 }
-
-
 
 void ATile::PlaceActors(TSubclassOf<AActor> toSpawn, FActorProperties actorProperties )
 {
-	TArray<FSpawnPosition> spawnPositions = RandomSpawnPositions( actorProperties );
-
-	for( FSpawnPosition spawnPosition : spawnPositions )
-	{
-		PlaceActor( toSpawn, spawnPosition );
-	}
+	RandomlyPlaceActors( toSpawn, actorProperties );
 }
 
-TArray<FSpawnPosition> ATile::RandomSpawnPositions( FActorProperties actorProperties )
+void ATile::PlaceAIPawns( TSubclassOf<APawn> toSpawn, FActorProperties actorProperties )
 {
-	TArray<FSpawnPosition> spawnPositions;
+	RandomlyPlaceActors( toSpawn, actorProperties );
+}
 
+template<class T>
+void ATile::RandomlyPlaceActors( TSubclassOf<T> toSpawn, FActorProperties actorProperties )
+{
 	int numberToSpawn = FMath::RandRange( actorProperties.minSpawn, actorProperties.maxSpawn );
 
 	for( size_t i = 0; i < numberToSpawn; i++ )
@@ -69,14 +69,10 @@ TArray<FSpawnPosition> ATile::RandomSpawnPositions( FActorProperties actorProper
 		if( found )
 		{
 			spawnPosition.rotation = FMath::RandRange( -180.f, 180.f );
-			spawnPositions.Add( spawnPosition );
+			PlaceActor( toSpawn, spawnPosition );
 		}
 	}
-
-	return spawnPositions;
 }
-
-
 
 bool ATile::FindEmpyLocation( FVector& outLocation, float radius )
 {
@@ -97,10 +93,26 @@ bool ATile::FindEmpyLocation( FVector& outLocation, float radius )
 void ATile::PlaceActor( TSubclassOf<AActor> toSpawn, FSpawnPosition spawnPosition )
 {
 	AActor* spawned = GetWorld()->SpawnActor<AActor>( toSpawn );
-	spawned->SetActorRelativeLocation( spawnPosition.location );
-	spawned->AttachToActor( this, FAttachmentTransformRules( EAttachmentRule::KeepRelative, false ) );
-	spawned->SetActorRotation( FRotator( 0, spawnPosition.rotation, 0 ) );
-	spawned->SetActorScale3D(FVector(spawnPosition.scale) );
+	if( spawned )
+	{
+		spawned->SetActorRelativeLocation( spawnPosition.location );
+		spawned->AttachToActor( this, FAttachmentTransformRules( EAttachmentRule::KeepRelative, false ) );
+		spawned->SetActorRotation( FRotator( 0, spawnPosition.rotation, 0 ) );
+		spawned->SetActorScale3D( FVector( spawnPosition.scale ) );
+	}
+}
+
+void ATile::PlaceActor( TSubclassOf<APawn> toSpawn, FSpawnPosition spawnPosition )
+{
+	APawn* spawned = GetWorld()->SpawnActor<APawn>( toSpawn );
+	if( spawned )
+	{
+		spawned->SpawnDefaultController();
+		spawned->Tags.Add( FName( "Enemy" ) );
+		spawned->SetActorRelativeLocation( spawnPosition.location );
+		spawned->AttachToActor( this, FAttachmentTransformRules( EAttachmentRule::KeepRelative, false ) );
+		spawned->SetActorRotation( FRotator( 0, spawnPosition.rotation, 0 ) );
+	}
 }
 
 // Called when the game starts or when spawned
@@ -120,7 +132,6 @@ void ATile::EndPlay( const EEndPlayReason::Type endPlayReason )
 void ATile::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 bool ATile::CanSpawnAtLocation( FVector location, float radius )
@@ -141,5 +152,12 @@ bool ATile::CanSpawnAtLocation( FVector location, float radius )
 	return !hasHit;
 }
 
-
-
+void ATile::TileConquered()
+{
+	if( !isTileConquered )
+	{
+		auto gamemode = Cast<AInfiniteTerrainGameMode>( GetWorld()->GetAuthGameMode() );
+		gamemode->NewNewTileConquered();
+		isTileConquered = true;
+	}
+}
