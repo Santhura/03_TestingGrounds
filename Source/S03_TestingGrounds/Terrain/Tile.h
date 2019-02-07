@@ -48,6 +48,8 @@ public:
 
 	UFUNCTION( BlueprintCallable, Category = "Spawning" )
 	void PlaceAIPawns( TSubclassOf<APawn> toSpawn, FActorProperties actorProperties );
+
+	
 	
 protected:
 	// Called when the game starts or when spawned
@@ -82,6 +84,11 @@ private:
 	template<class T>
 	void RandomlyPlaceActors( TSubclassOf<T> toSpawn, FActorProperties actorProperties );
 
+
+	TArray<AActor*> propsObjectList;
+
+	UFUNCTION( BlueprintCallable, Category = "Destory" )
+	void DestroyProps();
 
 	void PlaceActor( TSubclassOf<AActor> toSpawn, FSpawnPosition spawnPosition);
 	void PlaceActor( TSubclassOf<APawn> toSpawn, FSpawnPosition spawnPosition );

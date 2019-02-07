@@ -54,6 +54,8 @@ void ATile::PlaceAIPawns( TSubclassOf<APawn> toSpawn, FActorProperties actorProp
 	RandomlyPlaceActors( toSpawn, actorProperties );
 }
 
+
+
 template<class T>
 void ATile::RandomlyPlaceActors( TSubclassOf<T> toSpawn, FActorProperties actorProperties )
 {
@@ -93,11 +95,15 @@ void ATile::PlaceActor( TSubclassOf<AActor> toSpawn, FSpawnPosition spawnPositio
 	AActor* spawned = GetWorld()->SpawnActor<AActor>( toSpawn );
 	if( spawned )
 	{
+		propsObjectList.Add( spawned );
 		spawned->SetActorRelativeLocation( spawnPosition.location );
 		spawned->AttachToActor( this, FAttachmentTransformRules( EAttachmentRule::KeepRelative, false ) );
 		spawned->SetActorRotation( FRotator( 0, spawnPosition.rotation, 0 ) );
 		spawned->SetActorScale3D( FVector( spawnPosition.scale ) );
+		
+
 	}
+
 }
 
 void ATile::PlaceActor( TSubclassOf<APawn> toSpawn, FSpawnPosition spawnPosition )
@@ -109,6 +115,7 @@ void ATile::PlaceActor( TSubclassOf<APawn> toSpawn, FSpawnPosition spawnPosition
 		spawned->SpawnDefaultController();
 		spawned->Tags.Add( FName( "Enemy" ) );
 		spawned->AttachToActor( this, FAttachmentTransformRules( EAttachmentRule::KeepRelative, false ) );
+		//propsObjectList.Add( spawned );
 	}
 }
 
@@ -160,4 +167,16 @@ void ATile::TileConquered()
 		gamemode->NewNewTileConquered();
 		isTileConquered = true;
 	}
+}
+
+void ATile::DestroyProps()
+{
+	if( propsObjectList.Num() <= 0 ) return;
+	
+	for( size_t i = 0; i < propsObjectList.Num(); i++ )
+	{
+		 propsObjectList[i]->Destroy();
+
+	}
+	
 }
