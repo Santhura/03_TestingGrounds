@@ -42,11 +42,13 @@ void AMannequin::BeginPlay()
 	{
 		gun->AttachToComponent( FParms, FAttachmentTransformRules( EAttachmentRule::SnapToTarget, true ), TEXT( "GripPoint" ) );
 		gun->AnimInstance1P = FParms->GetAnimInstance();
+		gun->isHoldingByPlayer = true;
 	}
 	else
 	{
 		gun->AttachToComponent( GetMesh(), FAttachmentTransformRules( EAttachmentRule::SnapToTarget, true ), TEXT( "GripPoint" ) );
 		gun->AnimInstance3P = GetMesh()->GetAnimInstance();
+		gun->isHoldingByPlayer = false;
 	}
 
 	if( InputComponent != NULL )

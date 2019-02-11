@@ -4,6 +4,7 @@
 #include "BallProjectile.h"
 #include "Animation/AnimInstance.h"
 #include "Kismet/GameplayStatics.h"
+#include "DrawDebugHelpers.h"
 
 
 // Sets default values
@@ -32,6 +33,8 @@ void AGun::BeginPlay()
 {
 	Super::BeginPlay();
 
+	playerController = GetWorld()->GetFirstPlayerController();
+
 }
 
 // Called every frame
@@ -49,16 +52,36 @@ void AGun::OnFire()
 		UWorld* const World = GetWorld();
 		if( World != NULL )
 		{
-			const FRotator SpawnRotation = FP_MuzzleLocation->GetComponentRotation();
-				// MuzzleOffset is in camera space, so transform it to world space before offsetting from the character location to find the final muzzle position
-			const FVector SpawnLocation =  FP_MuzzleLocation->GetComponentLocation();
+			
+			FHitResult hitResult;
 
-				//Set Spawn Collision Handling Override
-				FActorSpawnParameters ActorSpawnParams;
-				ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
+			FVector endLocation = isHoldingByPlayer ? GetEndLineTrace() : GetEndLineLocation();
+			World->LineTraceSingleByChannel( hitResult, FP_MuzzleLocation->GetComponentLocation(), endLocation, ECollisionChannel::ECC_Camera );
 
-				// spawn the projectile at the muzzle
-				World->SpawnActor<ABallProjectile>( ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams );
+			DrawDebugLine(
+				GetWorld(),
+				FP_MuzzleLocation->GetComponentLocation(),
+				endLocation,
+				FColor::Red,
+				false, 2, 0, 1
+			);
+			
+			if( hitResult.GetActor() )
+			{
+				damage = FMath::FRandRange( damageMin, damageMax );
+				UGameplayStatics::ApplyPointDamage( hitResult.GetActor(), damage, hitResult.Normal, hitResult, nullptr, nullptr, NULL );
+			}
+
+			//const FRotator SpawnRotation = FP_MuzzleLocation->GetComponentRotation();
+			//	// MuzzleOffset is in camera space, so transform it to world space before offsetting from the character location to find the final muzzle position
+			//const FVector SpawnLocation =  FP_MuzzleLocation->GetComponentLocation();
+
+			//	//Set Spawn Collision Handling Override
+			//	FActorSpawnParameters ActorSpawnParams;
+			//	ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
+
+			//	// spawn the projectile at the muzzle
+			//	World->SpawnActor<ABallProjectile>( ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams );
 		}
 	}
 
@@ -80,3 +103,21 @@ void AGun::OnFire()
 	}
 }
 
+FVector AGun::GetEndLineTrace() const
+{
+	FVector playerViewLocation;
+	FRotator playerViewRotation;
+	if( !playerController ) { return FVector( 0 ); }
+
+	playerController->GetPlayerViewPoint( playerViewLocation, playerViewRotation );
+	return playerViewLocation + playerViewRotation.Vector() * 100000;
+}
+
+FVector AGun::GetEndLineLocation() const
+{
+	FVector SpawnLocation = FP_MuzzleLocation->GetComponentLocation();
+	FRotator spawnRotation = FP_MuzzleLocation->GetComponentRotation();
+	FVector endLoc = SpawnLocation + spawnRotation.Vector() * 100000;
+
+	return endLoc;
+}

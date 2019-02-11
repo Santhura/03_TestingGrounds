@@ -35,6 +35,9 @@ protected:
 	/** Fires a projectile. */
 
 public:	
+
+	bool isHoldingByPlayer = false;
+
 	/** Gun muzzle's offset from the characters location */
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = Gameplay )
 	FVector GunOffset;
@@ -66,5 +69,18 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	void OnFire();
 
-	
+private:
+
+	UPROPERTY( EditDefaultsOnly, Category = "Damage" )
+	float damageMin = 10;
+
+	UPROPERTY( EditDefaultsOnly, Category = "Damage" )
+	float damageMax = 40;
+
+	float damage = 30;
+
+	FVector GetEndLineTrace() const;
+	FVector GetEndLineLocation() const;
+
+	class APlayerController* playerController;
 };
