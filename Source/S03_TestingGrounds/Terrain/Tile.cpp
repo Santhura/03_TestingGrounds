@@ -176,7 +176,5 @@ void ATile::DestroyProps()
 	for( size_t i = 0; i < propsObjectList.Num(); i++ )
 	{
 		 propsObjectList[i]->Destroy();
-
 	}
-	
 }
