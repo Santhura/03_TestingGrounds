@@ -30,6 +30,20 @@ private:
 	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = ( AllowPrivateAccess = "true" ) )
 	AGun* gun = nullptr;
 
+	UPROPERTY( EditAnywhere, Category = "Health" )
+	float currentHealth = 100;
+
+	float maxHealth;
+
+	UFUNCTION( BlueprintCallable, Category = "Health" )
+	float GetCurrentHealthPercent();
+
+	UFUNCTION( BlueprintCallable, Category = "Health" )
+		float GetCurrentHealth() const;
+
+	UFUNCTION( BlueprintCallable, Category = "Health" )
+	void SetCurrentHealth(float updatedHealth);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

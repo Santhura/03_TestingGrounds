@@ -26,6 +26,9 @@ public:
 	UFUNCTION()
 	void NewNewTileConquered();
 
+	UFUNCTION( BlueprintCallable, Category = "Tile" )
+	bool RestTile();
+
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Pool" )
 	class UActorPool* navMeshBoundsVolumePool;

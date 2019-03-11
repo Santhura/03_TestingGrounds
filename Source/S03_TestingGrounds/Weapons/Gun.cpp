@@ -5,6 +5,11 @@
 #include "Animation/AnimInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
+#include "Math/RotationMatrix.h"
+#include "Components/DecalComponent.h"
+#include "Engine/DecalActor.h"
+#include "Classes/Materials/MaterialInterface.h"
+#include "Classes/Particles/ParticleSystem.h"
 
 
 // Sets default values
@@ -49,27 +54,50 @@ void AGun::OnFire()
 	// try and fire a projectile
 	if( ProjectileClass != NULL )
 	{
+
 		UWorld* const World = GetWorld();
 		if( World != NULL )
 		{
+			if( P_muzzleFlash == nullptr ) return;
+			
+			UGameplayStatics::SpawnEmitterAtLocation( GetWorld(), P_muzzleFlash, FP_MuzzleLocation->GetComponentLocation(), FRotator(), true );
 			
 			FHitResult hitResult;
 
 			FVector endLocation = isHoldingByPlayer ? GetEndLineTrace() : GetEndLineLocation();
 			World->LineTraceSingleByChannel( hitResult, FP_MuzzleLocation->GetComponentLocation(), endLocation, ECollisionChannel::ECC_Camera );
 
-			DrawDebugLine(
-				GetWorld(),
-				FP_MuzzleLocation->GetComponentLocation(),
-				endLocation,
-				FColor::Red,
-				false, 2, 0, 1
-			);
+			//DrawDebugLine(
+			//	GetWorld(),
+			//	FP_MuzzleLocation->GetComponentLocation(),
+			//	endLocation,
+			//	FColor::Red,
+			//	false, .2f, 0, 1
+			//);
 			
 			if( hitResult.GetActor() )
 			{
-				damage = FMath::FRandRange( damageMin, damageMax );
-				UGameplayStatics::ApplyPointDamage( hitResult.GetActor(), damage, hitResult.Normal, hitResult, nullptr, nullptr, NULL );
+				if( hitResult.GetActor()->GetName().Contains( "BP_Character" ) || hitResult.GetActor()->GetName().Contains( "player" ) )
+				{
+					damage = GetRealDamage(hitResult.BoneName.ToString());
+					UGameplayStatics::ApplyPointDamage( hitResult.GetActor(), damage, hitResult.Normal, hitResult, nullptr, nullptr, NULL );
+				}
+				else
+				{
+
+					UGameplayStatics::SpawnEmitterAtLocation( GetWorld(), P_bulletImpact, hitResult.Location, FRotator(), true );
+					ADecalActor* decal = GetWorld()->SpawnActor<ADecalActor>( hitResult.Location, FRotator() );
+
+					if( P_bulletImpact == nullptr ) { return; }
+
+					if( decal )
+					{
+						decal->SetDecalMaterial( decalMaterial );
+						decal->SetLifeSpan( 5.0f );
+						decal->GetDecal()->DecalSize = FVector( 12, 12, 12 );
+					}
+
+				}
 			}
 
 			//const FRotator SpawnRotation = FP_MuzzleLocation->GetComponentRotation();
@@ -120,4 +148,37 @@ FVector AGun::GetEndLineLocation() const
 	FVector endLoc = SpawnLocation + spawnRotation.Vector() * 100000;
 
 	return endLoc;
+}
+
+float AGun::GetRealDamage(FString bodyName) const
+{
+	float headShotDamage = FMath::FRandRange( 95, 200 );
+	float upperBodyDamage = FMath::FRandRange( damageMin, damageMax );
+	float lowerBodyDamage = FMath::FRandRange( 5, 10 );
+
+	for( size_t i = 0; i < headBodyParts.Num(); i++ )
+	{
+		if( bodyName.Contains( headBodyParts[i] ) )
+		{
+			return headShotDamage;
+		}
+	}
+
+	for( size_t i = 0; i < upperBodyParts.Num(); i++ )
+	{
+		if( bodyName.Contains( upperBodyParts[i] ) )
+		{
+			return upperBodyDamage;
+		}
+	}
+
+	for( size_t i = 0; i < lowerBodyParts.Num(); i++ )
+	{
+		if( bodyName.Contains( lowerBodyParts[i] ) )
+		{
+			return lowerBodyDamage;
+		}
+	}
+
+	return upperBodyDamage;
 }

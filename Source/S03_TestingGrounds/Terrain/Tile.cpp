@@ -22,11 +22,10 @@ ATile::ATile()
 
 void ATile::SetPool( UActorPool * inPool )
 {
-	UE_LOG( LogTemp, Warning, TEXT( "Setting pool %s" ), *( inPool->GetName() ) )
+	//UE_LOG( LogTemp, Warning, TEXT( "Setting pool %s" ), *( inPool->GetName() ) )
 	pool = inPool;
 
 	PositionNavMeshBoundsVolume();
-
 }
 
 void ATile::PositionNavMeshBoundsVolume()
@@ -38,7 +37,7 @@ void ATile::PositionNavMeshBoundsVolume()
 			return;
 	}
 
-	UE_LOG( LogTemp, Warning, TEXT( "[%s] checked out: {%s}" ), *GetName(), *navMeshBoundsVolume->GetName() );
+	//UE_LOG( LogTemp, Warning, TEXT( "[%s] checked out: {%s}" ), *GetName(), *navMeshBoundsVolume->GetName() );
 
 	navMeshBoundsVolume->SetActorLocation( GetActorLocation() + navigationBoundsOffset );
 	GetWorld()->GetNavigationSystem()->Build();
@@ -53,8 +52,6 @@ void ATile::PlaceAIPawns( TSubclassOf<APawn> toSpawn, FActorProperties actorProp
 {
 	RandomlyPlaceActors( toSpawn, actorProperties );
 }
-
-
 
 template<class T>
 void ATile::RandomlyPlaceActors( TSubclassOf<T> toSpawn, FActorProperties actorProperties )
@@ -77,7 +74,7 @@ void ATile::RandomlyPlaceActors( TSubclassOf<T> toSpawn, FActorProperties actorP
 bool ATile::FindEmpyLocation( FVector& outLocation, float radius )
 {
 	FBox bounds ( minExtent, maxExtent);
-	const int MAX_ATTEMPS = 100;
+	const int MAX_ATTEMPS = 50;
 	for( size_t i = 0; i < MAX_ATTEMPS; i++ )
 	{
 		FVector candidatePoint = FMath::RandPointInBox( bounds );
@@ -100,10 +97,7 @@ void ATile::PlaceActor( TSubclassOf<AActor> toSpawn, FSpawnPosition spawnPositio
 		spawned->AttachToActor( this, FAttachmentTransformRules( EAttachmentRule::KeepRelative, false ) );
 		spawned->SetActorRotation( FRotator( 0, spawnPosition.rotation, 0 ) );
 		spawned->SetActorScale3D( FVector( spawnPosition.scale ) );
-		
-
 	}
-
 }
 
 void ATile::PlaceActor( TSubclassOf<APawn> toSpawn, FSpawnPosition spawnPosition )
@@ -115,7 +109,6 @@ void ATile::PlaceActor( TSubclassOf<APawn> toSpawn, FSpawnPosition spawnPosition
 		spawned->SpawnDefaultController();
 		spawned->Tags.Add( FName( "Enemy" ) );
 		spawned->AttachToActor( this, FAttachmentTransformRules( EAttachmentRule::KeepRelative, false ) );
-		//propsObjectList.Add( spawned );
 	}
 }
 
@@ -132,7 +125,6 @@ void ATile::EndPlay( const EEndPlayReason::Type endPlayReason )
 	{
 		pool->Return( navMeshBoundsVolume );
 	}
-
 }
 
 // Called every frame

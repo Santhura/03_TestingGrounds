@@ -6,6 +6,16 @@
 #include "GameFramework/Actor.h"
 #include "Gun.generated.h"
 
+class ADecalActor;
+class UParticleSystem;
+
+enum BodyParts
+{
+	Head,
+	UpperBody,
+	LowerBody
+};
+
 UCLASS()
 class S03_TESTINGGROUNDS_API AGun : public AActor
 {
@@ -42,6 +52,15 @@ public:
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = Gameplay )
 	FVector GunOffset;
 
+	UPROPERTY( EditDefaultsOnly, Category = "Projectile" )
+	class UMaterialInterface* decalMaterial;
+
+	UPROPERTY( EditDefaultsOnly, Category = "Projectile" )
+	UParticleSystem* P_bulletImpact;
+
+	UPROPERTY( EditDefaultsOnly, Category = "Projectile" )
+	UParticleSystem* P_muzzleFlash;
+
 	/** Projectile class to spawn */
 	UPROPERTY( EditDefaultsOnly, Category = Projectile )
 	TSubclassOf<class ABallProjectile> ProjectileClass;
@@ -70,7 +89,7 @@ public:
 	void OnFire();
 
 private:
-
+	
 	UPROPERTY( EditDefaultsOnly, Category = "Damage" )
 	float damageMin = 10;
 
@@ -79,8 +98,17 @@ private:
 
 	float damage = 30;
 
+	UPROPERTY( EditDefaultsOnly, Category = "Body" )
+	TArray<FString> upperBodyParts;
+	UPROPERTY( EditDefaultsOnly, Category = "Body" )
+	TArray<FString> lowerBodyParts;
+	UPROPERTY( EditDefaultsOnly, Category = "Body" )
+	TArray<FString> headBodyParts;
+
 	FVector GetEndLineTrace() const;
 	FVector GetEndLineLocation() const;
+
+	float GetRealDamage( FString bodyName ) const;
 
 	class APlayerController* playerController;
 };

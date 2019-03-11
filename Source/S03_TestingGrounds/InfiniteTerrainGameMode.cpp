@@ -37,6 +37,12 @@ void AInfiniteTerrainGameMode::NewNewTileConquered()
 	score++;
 }
 
+bool AInfiniteTerrainGameMode::RestTile()
+{
+	if( score == 0 ) return false;
+	return ( score % 5 == 0 );
+}
+
 void AInfiniteTerrainGameMode::AddToPool( ANavMeshBoundsVolume * volumeToAdd )
 {
 	navMeshBoundsVolumePool->Add( volumeToAdd );

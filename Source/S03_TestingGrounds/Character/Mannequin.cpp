@@ -55,6 +55,8 @@ void AMannequin::BeginPlay()
 	{
 		InputComponent->BindAction( "Fire", IE_Pressed, this, &AMannequin::PullTrigger );
 	}
+
+	maxHealth = currentHealth;
 }
 
 // Called every frame
@@ -78,6 +80,21 @@ void AMannequin::UnPossessed()
 	{
 		gun->AttachToComponent( GetMesh(), FAttachmentTransformRules( EAttachmentRule::SnapToTarget, true ), TEXT( "GripPoint" ) );
 	}
+}
+
+float AMannequin::GetCurrentHealthPercent()
+{
+	return currentHealth / maxHealth;
+}
+
+float AMannequin::GetCurrentHealth() const
+{
+	return currentHealth;
+}
+
+void AMannequin::SetCurrentHealth( float updatedHealth )
+{
+	currentHealth = updatedHealth;
 }
 
 void AMannequin::PullTrigger()
