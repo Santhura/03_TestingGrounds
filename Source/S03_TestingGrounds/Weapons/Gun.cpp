@@ -64,17 +64,9 @@ void AGun::OnFire()
 			
 			FHitResult hitResult;
 
-			FVector endLocation = isHoldingByPlayer ? GetEndLineTrace() : GetEndLineLocation();
+			FVector endLocation = isHoldingByPlayer ? GetEndLineTraceFromFPCamera() : GetEndLineLocation();
 			World->LineTraceSingleByChannel( hitResult, FP_MuzzleLocation->GetComponentLocation(), endLocation, ECollisionChannel::ECC_Camera );
 
-			//DrawDebugLine(
-			//	GetWorld(),
-			//	FP_MuzzleLocation->GetComponentLocation(),
-			//	endLocation,
-			//	FColor::Red,
-			//	false, .2f, 0, 1
-			//);
-			
 			if( hitResult.GetActor() )
 			{
 				if( hitResult.GetActor()->GetName().Contains( "BP_Character" ) || hitResult.GetActor()->GetName().Contains( "player" ) )
@@ -96,20 +88,8 @@ void AGun::OnFire()
 						decal->SetLifeSpan( 5.0f );
 						decal->GetDecal()->DecalSize = FVector( 12, 12, 12 );
 					}
-
 				}
 			}
-
-			//const FRotator SpawnRotation = FP_MuzzleLocation->GetComponentRotation();
-			//	// MuzzleOffset is in camera space, so transform it to world space before offsetting from the character location to find the final muzzle position
-			//const FVector SpawnLocation =  FP_MuzzleLocation->GetComponentLocation();
-
-			//	//Set Spawn Collision Handling Override
-			//	FActorSpawnParameters ActorSpawnParams;
-			//	ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
-
-			//	// spawn the projectile at the muzzle
-			//	World->SpawnActor<ABallProjectile>( ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams );
 		}
 	}
 
@@ -131,21 +111,21 @@ void AGun::OnFire()
 	}
 }
 
-FVector AGun::GetEndLineTrace() const
+FVector AGun::GetEndLineTraceFromFPCamera() const
 {
 	FVector playerViewLocation;
 	FRotator playerViewRotation;
 	if( !playerController ) { return FVector( 0 ); }
 
 	playerController->GetPlayerViewPoint( playerViewLocation, playerViewRotation );
-	return playerViewLocation + playerViewRotation.Vector() * 100000;
+	return playerViewLocation + playerViewRotation.Vector() * ShootingRange;
 }
 
 FVector AGun::GetEndLineLocation() const
 {
 	FVector SpawnLocation = FP_MuzzleLocation->GetComponentLocation();
 	FRotator spawnRotation = FP_MuzzleLocation->GetComponentRotation();
-	FVector endLoc = SpawnLocation + spawnRotation.Vector() * 100000;
+	FVector endLoc = SpawnLocation + spawnRotation.Vector() * ShootingRange;
 
 	return endLoc;
 }
@@ -156,29 +136,50 @@ float AGun::GetRealDamage(FString bodyName) const
 	float upperBodyDamage = FMath::FRandRange( damageMin, damageMax );
 	float lowerBodyDamage = FMath::FRandRange( 5, 10 );
 
-	for( size_t i = 0; i < headBodyParts.Num(); i++ )
+	EBodyParts bodyParts = GetBodyPartHit( bodyPartLists, bodyName );
+	switch( bodyParts )
 	{
-		if( bodyName.Contains( headBodyParts[i] ) )
-		{
+		case EBodyParts::HEAD:
 			return headShotDamage;
-		}
-	}
-
-	for( size_t i = 0; i < upperBodyParts.Num(); i++ )
-	{
-		if( bodyName.Contains( upperBodyParts[i] ) )
-		{
+			break;
+		case EBodyParts::UPPERBODY:
 			return upperBodyDamage;
-		}
-	}
-
-	for( size_t i = 0; i < lowerBodyParts.Num(); i++ )
-	{
-		if( bodyName.Contains( lowerBodyParts[i] ) )
-		{
+			break;
+		case EBodyParts::LOWERBODY:
 			return lowerBodyDamage;
-		}
+			break;
+		case EBodyParts::NONE:
+			return FMath::FRandRange( 10, 50 );
+			break;
+		default:
+			break;
 	}
 
-	return upperBodyDamage;
+	return 0;
+}
+
+EBodyParts AGun::GetBodyPartHit( FBodyPartLists searchBodyPart, FString bodyName ) const
+{
+	for( size_t i = 0; i < searchBodyPart.headBodyParts.Num(); i++ )
+	{
+		if( bodyName.Contains( searchBodyPart.headBodyParts[i] ) )
+		{
+			return EBodyParts::HEAD;
+		}
+	}
+	for( size_t i = 0; i < searchBodyPart.upperBodyParts.Num(); i++ )
+	{
+		if( bodyName.Contains( searchBodyPart.upperBodyParts[i] ) )
+		{
+			return EBodyParts::UPPERBODY;
+		}
+	}
+	for( size_t i = 0; i < searchBodyPart.lowerBodyParts.Num(); i++ )
+	{
+		if( bodyName.Contains( searchBodyPart.lowerBodyParts[i] ) )
+		{
+			return EBodyParts::LOWERBODY;
+		}
+	}
+	return EBodyParts::NONE;
 }

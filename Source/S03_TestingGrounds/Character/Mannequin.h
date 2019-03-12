@@ -39,10 +39,11 @@ private:
 	float GetCurrentHealthPercent();
 
 	UFUNCTION( BlueprintCallable, Category = "Health" )
-		float GetCurrentHealth() const;
+	float GetCurrentHealth() const;
 
 	UFUNCTION( BlueprintCallable, Category = "Health" )
 	void SetCurrentHealth(float updatedHealth);
+
 
 protected:
 	// Called when the game starts or when spawned

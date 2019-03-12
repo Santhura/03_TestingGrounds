@@ -6,15 +6,29 @@
 #include "GameFramework/Actor.h"
 #include "Gun.generated.h"
 
+UENUM()
+enum class EBodyParts : uint8
+{
+	NONE,
+	HEAD,
+	UPPERBODY,
+	LOWERBODY
+};
+
+USTRUCT( BlueprintType )
+struct FBodyPartLists
+{
+	GENERATED_USTRUCT_BODY()
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Body" )
+	TArray<FString> upperBodyParts;
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Body" )
+	TArray<FString> lowerBodyParts;
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Body" )
+	TArray<FString> headBodyParts;
+};
+
 class ADecalActor;
 class UParticleSystem;
-
-enum BodyParts
-{
-	Head,
-	UpperBody,
-	LowerBody
-};
 
 UCLASS()
 class S03_TESTINGGROUNDS_API AGun : public AActor
@@ -98,15 +112,18 @@ private:
 
 	float damage = 30;
 
-	UPROPERTY( EditDefaultsOnly, Category = "Body" )
-	TArray<FString> upperBodyParts;
-	UPROPERTY( EditDefaultsOnly, Category = "Body" )
-	TArray<FString> lowerBodyParts;
-	UPROPERTY( EditDefaultsOnly, Category = "Body" )
-	TArray<FString> headBodyParts;
+	UPROPERTY( EditDefaultsOnly, Category = "Gun" )
+	float ShootingRange = 100000;
 
-	FVector GetEndLineTrace() const;
+	UPROPERTY( EditDefaultsOnly, Category = "Body" )
+	FBodyPartLists bodyPartLists;
+
+	UFUNCTION( BlueprintCallable, Category = "Body" )
+	void SetBodyPartList( FBodyPartLists newbodyPartLists ) { bodyPartLists = newbodyPartLists; }
+
+	FVector GetEndLineTraceFromFPCamera() const;
 	FVector GetEndLineLocation() const;
+	EBodyParts GetBodyPartHit( FBodyPartLists searchBodyPart, FString bodyName ) const;
 
 	float GetRealDamage( FString bodyName ) const;
 
