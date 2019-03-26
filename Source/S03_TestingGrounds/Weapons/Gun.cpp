@@ -10,6 +10,7 @@
 #include "Engine/DecalActor.h"
 #include "Classes/Materials/MaterialInterface.h"
 #include "Classes/Particles/ParticleSystem.h"
+#include "Character/Mannequin.h"
 
 
 // Sets default values
@@ -51,10 +52,7 @@ void AGun::Tick(float DeltaTime)
 
 void AGun::OnFire()
 {
-	// try and fire a projectile
-	if( ProjectileClass != NULL )
-	{
-
+	UE_LOG( LogTemp, Warning, TEXT( "What weapon: %s" ), *GetName() )
 		UWorld* const World = GetWorld();
 		if( World != NULL )
 		{
@@ -66,6 +64,13 @@ void AGun::OnFire()
 
 			FVector endLocation = isHoldingByPlayer ? GetEndLineTraceFromFPCamera() : GetEndLineLocation();
 			World->LineTraceSingleByChannel( hitResult, FP_MuzzleLocation->GetComponentLocation(), endLocation, ECollisionChannel::ECC_Camera );
+			DrawDebugLine(
+				GetWorld(),
+				FP_MuzzleLocation->GetComponentLocation(),
+				endLocation,
+				FColor::Red,
+				false, 20.f, 0, 1
+			);
 
 			if( hitResult.GetActor() )
 			{
@@ -76,7 +81,6 @@ void AGun::OnFire()
 				}
 				else
 				{
-
 					UGameplayStatics::SpawnEmitterAtLocation( GetWorld(), P_bulletImpact, hitResult.Location, FRotator(), true );
 					ADecalActor* decal = GetWorld()->SpawnActor<ADecalActor>( hitResult.Location, FRotator() );
 
@@ -91,7 +95,6 @@ void AGun::OnFire()
 				}
 			}
 		}
-	}
 
 	// try and play the sound if specified
 	if( FireSound != NULL )
@@ -140,15 +143,19 @@ float AGun::GetRealDamage(FString bodyName) const
 	switch( bodyParts )
 	{
 		case EBodyParts::HEAD:
+			UE_LOG( LogTemp, Warning, TEXT( "head shot damage: %f" ), headShotDamage );
 			return headShotDamage;
 			break;
 		case EBodyParts::UPPERBODY:
+			UE_LOG( LogTemp, Warning, TEXT( "upperbody shot damage: %f" ), upperBodyDamage );
 			return upperBodyDamage;
 			break;
 		case EBodyParts::LOWERBODY:
+			UE_LOG( LogTemp, Warning, TEXT( "lowerbody shot damage: %f" ), lowerBodyDamage );
 			return lowerBodyDamage;
 			break;
 		case EBodyParts::NONE:
+			UE_LOG( LogTemp, Warning, TEXT( "NONE shot damage" ) );
 			return FMath::FRandRange( 10, 50 );
 			break;
 		default:
@@ -158,7 +165,7 @@ float AGun::GetRealDamage(FString bodyName) const
 	return 0;
 }
 
-EBodyParts AGun::GetBodyPartHit( FBodyPartLists searchBodyPart, FString bodyName ) const
+EBodyParts AGun::GetBodyPartHit(FBodyPartLists searchBodyPart, FString bodyName ) const
 {
 	for( size_t i = 0; i < searchBodyPart.headBodyParts.Num(); i++ )
 	{

@@ -6,6 +6,8 @@
 #include "GameFramework/Character.h"
 #include "Mannequin.generated.h"
 
+
+
 UCLASS()
 class S03_TESTINGGROUNDS_API AMannequin : public ACharacter
 {
@@ -15,10 +17,15 @@ public:
 	// Sets default values for this character's properties
 	AMannequin();
 
-
-
 	UPROPERTY( EditDefaultsOnly, Category = "Setup" )
 	TSubclassOf<class AGun> gunBlueprint;
+	UPROPERTY( EditDefaultsOnly, Category = "Setup" )
+		TSubclassOf<class AGun> othergunBlueprint;
+
+	UPROPERTY( EditDefaultsOnly, Category = "Setup" )
+	TArray<TSubclassOf<class AGun>> gunBlueprint_list;
+
+	
 
 private:
 	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = ( AllowPrivateAccess = "true" ) )
@@ -28,7 +35,15 @@ private:
 	USkeletalMeshComponent* FParms = nullptr;
 
 	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = ( AllowPrivateAccess = "true" ) )
+	AGun* currentGun = nullptr;
+
+	TArray<AGun*> weaponSlots;
+	int32 currentWeaponIndex = 0;
+
+	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = ( AllowPrivateAccess = "true" ) )
 	AGun* gun = nullptr;
+	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = ( AllowPrivateAccess = "true" ) )
+	AGun* otherGun = nullptr;
 
 	UPROPERTY( EditAnywhere, Category = "Health" )
 	float currentHealth = 100;
@@ -43,6 +58,9 @@ private:
 
 	UFUNCTION( BlueprintCallable, Category = "Health" )
 	void SetCurrentHealth(float updatedHealth);
+
+	UFUNCTION( BlueprintCallable, Category = "Weapons" )
+	void ChangeWeapons( int32 index, float mouseScrollIndexAddition );
 
 
 protected:

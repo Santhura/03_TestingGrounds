@@ -19,29 +19,30 @@ USTRUCT( BlueprintType )
 struct FBodyPartLists
 {
 	GENERATED_USTRUCT_BODY()
+		UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Body" )
+		TArray<FString> upperBodyParts;
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Body" )
-	TArray<FString> upperBodyParts;
+		TArray<FString> lowerBodyParts;
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Body" )
-	TArray<FString> lowerBodyParts;
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Body" )
-	TArray<FString> headBodyParts;
+		TArray<FString> headBodyParts;
 };
 
 class ADecalActor;
 class UParticleSystem;
+class USkeletalMeshComponent;
 
 UCLASS()
 class S03_TESTINGGROUNDS_API AGun : public AActor
 {
 	GENERATED_BODY()
 
-		/** Pawn mesh: 1st person view (arms; seen only by self) */
-		UPROPERTY( VisibleDefaultsOnly, Category = Mesh )
-		class USkeletalMeshComponent* Mesh1P;
+	/** Pawn mesh: 1st person view (arms; seen only by self) */
+	UPROPERTY( VisibleDefaultsOnly, Category = Mesh )
+	USkeletalMeshComponent* Mesh1P;
 	
 	/** Gun mesh: 1st person view (seen only by self) */
 	UPROPERTY( VisibleDefaultsOnly, Category = Mesh )
-	class USkeletalMeshComponent* FP_Gun;
+	USkeletalMeshComponent* FP_Gun;
 
 	/** Location on gun mesh where projectiles should spawn. */
 	UPROPERTY( VisibleDefaultsOnly, Category = Mesh )
@@ -59,6 +60,8 @@ protected:
 	/** Fires a projectile. */
 
 public:	
+
+
 
 	bool isHoldingByPlayer = false;
 
@@ -115,15 +118,15 @@ private:
 	UPROPERTY( EditDefaultsOnly, Category = "Gun" )
 	float ShootingRange = 100000;
 
-	UPROPERTY( EditDefaultsOnly, Category = "Body" )
-	FBodyPartLists bodyPartLists;
-
 	UFUNCTION( BlueprintCallable, Category = "Body" )
-	void SetBodyPartList( FBodyPartLists newbodyPartLists ) { bodyPartLists = newbodyPartLists; }
+		void SetBodyPartList( FBodyPartLists newbodyPartLists ) { bodyPartLists = newbodyPartLists; }
+
+
+	FBodyPartLists bodyPartLists;
 
 	FVector GetEndLineTraceFromFPCamera() const;
 	FVector GetEndLineLocation() const;
-	EBodyParts GetBodyPartHit( FBodyPartLists searchBodyPart, FString bodyName ) const;
+	EBodyParts GetBodyPartHit(FBodyPartLists searchBodyPart, FString bodyName ) const;
 
 	float GetRealDamage( FString bodyName ) const;
 

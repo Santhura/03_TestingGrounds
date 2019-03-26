@@ -38,11 +38,20 @@ void AMannequin::BeginPlay()
 		return;
 	}
 	gun = GetWorld()->SpawnActor<AGun>( gunBlueprint );
+	otherGun = GetWorld()->SpawnActor<AGun>( othergunBlueprint );
+	weaponSlots.Add( gun );
+	weaponSlots.Add( otherGun );
+	currentGun = weaponSlots[currentWeaponIndex];
+
 	if( IsPlayerControlled() )
 	{
-		gun->AttachToComponent( FParms, FAttachmentTransformRules( EAttachmentRule::SnapToTarget, true ), TEXT( "GripPoint" ) );
-		gun->AnimInstance1P = FParms->GetAnimInstance();
-		gun->isHoldingByPlayer = true;
+		currentGun->AttachToComponent( FParms, FAttachmentTransformRules( EAttachmentRule::SnapToTarget, true ), TEXT( "GripPoint" ) );
+		currentGun->AnimInstance1P = FParms->GetAnimInstance();
+		currentGun->isHoldingByPlayer = true;
+
+		otherGun->AttachToComponent( FParms, FAttachmentTransformRules( EAttachmentRule::SnapToTarget, true ), TEXT( "OtherGun" ) );
+		otherGun->AnimInstance1P = FParms->GetAnimInstance();
+		otherGun->isHoldingByPlayer = true;
 	}
 	else
 	{
@@ -71,6 +80,9 @@ void AMannequin::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+	/*PlayerInputComponent->BindAction( "Weapon1", IE_Pressed, this, &AMannequin::SwitchWeapon, 0 );
+	PlayerInputComponent->BindAction( "Weapon2", IE_Pressed, this, &AMannequin::SwitchWeapon, 1 );*/
+
 }
 
 void AMannequin::UnPossessed()
@@ -97,8 +109,38 @@ void AMannequin::SetCurrentHealth( float updatedHealth )
 	currentHealth = updatedHealth;
 }
 
-void AMannequin::PullTrigger()
+void AMannequin::ChangeWeapons( int32 index, float mouseScrollIndexAddition )
 {
-	gun->OnFire();
+	
+	int32 newIndex = ( mouseScrollIndexAddition < -1 ) ? index : currentWeaponIndex += mouseScrollIndexAddition;
+	UE_LOG( LogTemp, Warning, TEXT( "current index = %d" ), currentWeaponIndex )
+	
+	if( newIndex >= weaponSlots.Num() )
+		newIndex = 0;
+	else if( newIndex < 0 )
+		newIndex = weaponSlots.Num() - 1;
+
+	currentWeaponIndex = newIndex;
+
+	if( weaponSlots.IsValidIndex( newIndex ) )
+	{
+		if( IsPlayerControlled() )
+		{
+			// detach current gun and attach it to socket on the back
+			currentGun->DetachFromActor( FDetachmentTransformRules::KeepWorldTransform );
+			currentGun->AttachToComponent( FParms, FAttachmentTransformRules( EAttachmentRule::SnapToTarget, true ), TEXT( "OtherGun" ) );
+
+			// attach weapon from the slots to the current weapon holding
+			currentGun = nullptr;
+			currentGun = weaponSlots[newIndex];
+			currentGun->AttachToComponent( FParms, FAttachmentTransformRules( EAttachmentRule::SnapToTarget, true ), TEXT( "GripPoint" ) );
+			currentGun->AnimInstance1P = FParms->GetAnimInstance();
+			currentGun->isHoldingByPlayer = true;
+		}
+	}
 }
 
+void AMannequin::PullTrigger()
+{
+	currentGun->OnFire();
+}
