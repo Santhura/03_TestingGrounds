@@ -44,6 +44,7 @@ void AGun::BeginPlay()
 
 }
 
+
 // Called every frame
 void AGun::Tick(float DeltaTime)
 {
@@ -131,6 +132,17 @@ void AGun::OnFire()
 		ammo--;
 	}
 }
+
+void AGun::RefillAmmo( int32 addAmmo )
+{
+	ammo += addAmmo;
+
+	if( ammo > maxAmmo )
+	{
+		ammo = maxAmmo;
+	}
+}
+
 
 FVector AGun::GetEndLineTraceFromFPCamera() const
 {

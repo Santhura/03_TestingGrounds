@@ -68,8 +68,10 @@ public:
 	UFUNCTION( BlueprintCallable, Category = "Texture" )
 	UTexture2D* GetWeaponTex()const { return WeaponTex; };
 
-	UFUNCTION( BlueprintCallable, Category = "Texture" )
+	UFUNCTION( BlueprintCallable, Category = "Ammo" )
 		int32 GetAmmo()const { return ammo; }
+	UFUNCTION( BlueprintCallable, Category = "Ammo" )
+		void RefillAmmo(int32 addAmmo);
 
 	bool isHoldingByPlayer = false;
 
