@@ -30,6 +30,7 @@ struct FBodyPartLists
 class ADecalActor;
 class UParticleSystem;
 class USkeletalMeshComponent;
+class UTexture2D;
 
 UCLASS()
 class S03_TESTINGGROUNDS_API AGun : public AActor
@@ -61,7 +62,14 @@ protected:
 
 public:	
 
+	UPROPERTY( EditDefaultsOnly, Category = "Texture" )
+	UTexture2D* WeaponTex;
 
+	UFUNCTION( BlueprintCallable, Category = "Texture" )
+	UTexture2D* GetWeaponTex()const { return WeaponTex; };
+
+	UFUNCTION( BlueprintCallable, Category = "Texture" )
+		int32 GetAmmo()const { return ammo; }
 
 	bool isHoldingByPlayer = false;
 
@@ -106,7 +114,11 @@ public:
 	void OnFire();
 
 private:
-	
+	UPROPERTY( EditDefaultsOnly, Category = "Ammo" )
+	int32 ammo = 20;
+	UPROPERTY( EditDefaultsOnly, Category = "Ammo" )
+	int32 maxAmmo = 20;
+
 	UPROPERTY( EditDefaultsOnly, Category = "Damage" )
 	float damageMin = 10;
 

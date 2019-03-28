@@ -3,6 +3,8 @@
 #include "BallProjectile.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/SphereComponent.h"
+#include "Classes/Particles/ParticleSystem.h"
+#include "Kismet/GameplayStatics.h"
 
 ABallProjectile::ABallProjectile() 
 {
@@ -31,13 +33,35 @@ ABallProjectile::ABallProjectile()
 	InitialLifeSpan = 3.0f;
 }
 
+
+void ABallProjectile::Tick( float DeltaTime )
+{
+	Super::Tick( DeltaTime );
+
+	if( timer > 0 )
+	{
+		timer -= DeltaTime;
+	}
+	else
+	{
+		UE_LOG( LogTemp, Warning, TEXT( "Bomb" ) )
+		UGameplayStatics::SpawnEmitterAtLocation( GetWorld(), GrenateExplosion, GetActorLocation(), GetActorRotation(), true );
+		Destroy();
+	}
+
+}
 void ABallProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
+	
+
 	// Only add impulse and destroy projectile if we hit a physics
 	if ((OtherActor != NULL) && (OtherActor != this) && (OtherComp != NULL) && OtherComp->IsSimulatingPhysics())
 	{
 		OtherComp->AddImpulseAtLocation(GetVelocity() * 100.0f, GetActorLocation());
 
-		Destroy();
+
+
+		//Destroy();
 	}
+
 }

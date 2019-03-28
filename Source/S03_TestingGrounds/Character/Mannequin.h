@@ -25,7 +25,8 @@ public:
 	UPROPERTY( EditDefaultsOnly, Category = "Setup" )
 	TArray<TSubclassOf<class AGun>> gunBlueprint_list;
 
-	
+	UFUNCTION( BlueprintCallable, Category = "Weapon" )
+		AGun* GetCurrentWeapon()const { return currentGun; }
 
 private:
 	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = ( AllowPrivateAccess = "true" ) )

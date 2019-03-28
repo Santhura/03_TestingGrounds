@@ -111,9 +111,7 @@ void AMannequin::SetCurrentHealth( float updatedHealth )
 
 void AMannequin::ChangeWeapons( int32 index, float mouseScrollIndexAddition )
 {
-	
 	int32 newIndex = ( mouseScrollIndexAddition < -1 ) ? index : currentWeaponIndex += mouseScrollIndexAddition;
-	UE_LOG( LogTemp, Warning, TEXT( "current index = %d" ), currentWeaponIndex )
 	
 	if( newIndex >= weaponSlots.Num() )
 		newIndex = 0;

@@ -11,6 +11,7 @@
 #include "Classes/Materials/MaterialInterface.h"
 #include "Classes/Particles/ParticleSystem.h"
 #include "Character/Mannequin.h"
+#include "Engine/Texture2D.h"
 
 
 // Sets default values
@@ -52,18 +53,20 @@ void AGun::Tick(float DeltaTime)
 
 void AGun::OnFire()
 {
-	UE_LOG( LogTemp, Warning, TEXT( "What weapon: %s" ), *GetName() )
-		UWorld* const World = GetWorld();
+	UWorld* const World = GetWorld();
+	if( ammo > 0 )
+	{
 		if( World != NULL )
 		{
 			if( P_muzzleFlash == nullptr ) return;
-			
+
 			UGameplayStatics::SpawnEmitterAtLocation( GetWorld(), P_muzzleFlash, FP_MuzzleLocation->GetComponentLocation(), FRotator(), true );
-			
+
 			FHitResult hitResult;
 
 			FVector endLocation = isHoldingByPlayer ? GetEndLineTraceFromFPCamera() : GetEndLineLocation();
 			World->LineTraceSingleByChannel( hitResult, FP_MuzzleLocation->GetComponentLocation(), endLocation, ECollisionChannel::ECC_Camera );
+
 			DrawDebugLine(
 				GetWorld(),
 				FP_MuzzleLocation->GetComponentLocation(),
@@ -76,13 +79,13 @@ void AGun::OnFire()
 			{
 				if( hitResult.GetActor()->GetName().Contains( "BP_Character" ) || hitResult.GetActor()->GetName().Contains( "player" ) )
 				{
-					damage = GetRealDamage(hitResult.BoneName.ToString());
+					damage = GetRealDamage( hitResult.BoneName.ToString() );
 					UGameplayStatics::ApplyPointDamage( hitResult.GetActor(), damage, hitResult.Normal, hitResult, nullptr, nullptr, NULL );
 				}
 				else
 				{
-					UGameplayStatics::SpawnEmitterAtLocation( GetWorld(), P_bulletImpact, hitResult.Location, FRotator(), true );
-					ADecalActor* decal = GetWorld()->SpawnActor<ADecalActor>( hitResult.Location, FRotator() );
+					UGameplayStatics::SpawnEmitterAtLocation( GetWorld(), P_bulletImpact, hitResult.Location, hitResult.ImpactPoint.Rotation(), true );
+					ADecalActor* decal = GetWorld()->SpawnActor<ADecalActor>( hitResult.Location, hitResult.ImpactPoint.Rotation() );
 
 					if( P_bulletImpact == nullptr ) { return; }
 
@@ -95,22 +98,37 @@ void AGun::OnFire()
 				}
 			}
 		}
+		if( ProjectileClass )
+		{
+			const FRotator SpawnRotation = FP_MuzzleLocation->GetComponentRotation();
+			// MuzzleOffset is in camera space, so transform it to world space before offsetting from the character location to find the final muzzle position
+			const FVector SpawnLocation = FP_MuzzleLocation->GetComponentLocation();
 
-	// try and play the sound if specified
-	if( FireSound != NULL )
-	{
-		UGameplayStatics::PlaySoundAtLocation( this, FireSound, GetActorLocation() );
-	}
+			//Set Spawn Collision Handling Override
+			FActorSpawnParameters ActorSpawnParams;
+			ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
 
-	// try and play a firing animation if specified
-	if( FireAnimation3P != nullptr && AnimInstance3P != nullptr )
-	{
-		AnimInstance3P->Montage_Play( FireAnimation3P, 1.f );
-	}
+			// spawn the projectile at the muzzle
+			World->SpawnActor<ABallProjectile>( ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams );
+		}
 
-	if( FireAnimation1P != nullptr && AnimInstance1P != nullptr )
-	{
-		AnimInstance1P->Montage_Play( FireAnimation1P, 1.f );
+		// try and play the sound if specified
+		if( FireSound != NULL )
+		{
+			UGameplayStatics::PlaySoundAtLocation( this, FireSound, GetActorLocation() );
+		}
+
+		// try and play a firing animation if specified
+		if( FireAnimation3P != nullptr && AnimInstance3P != nullptr )
+		{
+			AnimInstance3P->Montage_Play( FireAnimation3P, 1.f );
+		}
+
+		if( FireAnimation1P != nullptr && AnimInstance1P != nullptr )
+		{
+			AnimInstance1P->Montage_Play( FireAnimation1P, 1.f );
+		}
+		ammo--;
 	}
 }
 
@@ -143,19 +161,15 @@ float AGun::GetRealDamage(FString bodyName) const
 	switch( bodyParts )
 	{
 		case EBodyParts::HEAD:
-			UE_LOG( LogTemp, Warning, TEXT( "head shot damage: %f" ), headShotDamage );
 			return headShotDamage;
 			break;
 		case EBodyParts::UPPERBODY:
-			UE_LOG( LogTemp, Warning, TEXT( "upperbody shot damage: %f" ), upperBodyDamage );
 			return upperBodyDamage;
 			break;
 		case EBodyParts::LOWERBODY:
-			UE_LOG( LogTemp, Warning, TEXT( "lowerbody shot damage: %f" ), lowerBodyDamage );
 			return lowerBodyDamage;
 			break;
 		case EBodyParts::NONE:
-			UE_LOG( LogTemp, Warning, TEXT( "NONE shot damage" ) );
 			return FMath::FRandRange( 10, 50 );
 			break;
 		default:

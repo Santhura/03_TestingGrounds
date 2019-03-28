@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "BallProjectile.generated.h"
 
+class UParticleSystem;
+
 UCLASS(config=Game)
 class ABallProjectile : public AActor
 {
@@ -22,6 +24,8 @@ class ABallProjectile : public AActor
 public:
 	ABallProjectile();
 
+	virtual void Tick( float DeltaTime ) override;
+
 	/** called when projectile hits something */
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
@@ -30,5 +34,11 @@ public:
 	FORCEINLINE class USphereComponent* GetCollisionComp() const { return CollisionComp; }
 	/** Returns ProjectileMovement subobject **/
 	FORCEINLINE class UProjectileMovementComponent* GetProjectileMovement() const { return ProjectileMovement; }
+
+private:
+	UPROPERTY( EditDefaultsOnly, Category = "Projectile" )
+		UParticleSystem* GrenateExplosion;
+
+	float timer = .5f;
 };
 
