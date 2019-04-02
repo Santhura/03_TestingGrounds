@@ -166,3 +166,8 @@ void AMannequin::TriggerRelease()
 	firstShot = false;
 	GetWorldTimerManager().ClearTimer( handle );
 }
+
+void AMannequin::AIPullTrigger()
+{
+	Shoot();
+}

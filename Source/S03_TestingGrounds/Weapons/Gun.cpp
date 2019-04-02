@@ -67,19 +67,20 @@ void AGun::OnFire()
 
 			FVector endLocation = isHoldingByPlayer ? GetEndLineTraceFromFPCamera() : GetEndLineLocation();
 			World->LineTraceSingleByChannel( hitResult, FP_MuzzleLocation->GetComponentLocation(), endLocation, ECollisionChannel::ECC_Camera );
-
+			
 			DrawDebugLine(
 				GetWorld(),
 				FP_MuzzleLocation->GetComponentLocation(),
 				endLocation,
-				FColor::Red,
-				false, .1f, 0, 1
+				FColor::FromHex( "#D3D3D3" ),
+				false, .2f, 0, 1
 			);
 
 			if( hitResult.GetActor() )
 			{
 				if( hitResult.GetActor()->GetName().Contains( "BP_Character" ) || hitResult.GetActor()->GetName().Contains( "player" ) )
 				{
+					UGameplayStatics::SpawnEmitterAtLocation( GetWorld(), P_hit, hitResult.Location, hitResult.ImpactPoint.Rotation(), true );
 					damage = GetRealDamage( hitResult.BoneName.ToString() );
 					UGameplayStatics::ApplyPointDamage( hitResult.GetActor(), damage, hitResult.Normal, hitResult, nullptr, nullptr, NULL );
 				}

@@ -97,6 +97,9 @@ public:
 	UPROPERTY( EditDefaultsOnly, Category = "Projectile" )
 	UParticleSystem* P_muzzleFlash;
 
+	UPROPERTY( EditDefaultsOnly, Category = "Hit" )
+		UParticleSystem* P_hit;
+
 	/** Projectile class to spawn */
 	UPROPERTY( EditDefaultsOnly, Category = Projectile )
 	TSubclassOf<class ABallProjectile> ProjectileClass;

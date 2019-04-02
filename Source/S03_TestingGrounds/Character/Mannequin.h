@@ -89,5 +89,8 @@ public:
 	void PullTrigger();
 	UFUNCTION( BlueprintCallable, Category = "Input" )
 	void TriggerRelease();
+
+	UFUNCTION( BlueprintCallable, Category = "Input" )
+	void AIPullTrigger();
 	
 };
