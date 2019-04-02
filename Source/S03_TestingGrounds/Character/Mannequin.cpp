@@ -63,6 +63,7 @@ void AMannequin::BeginPlay()
 	if( InputComponent != NULL )
 	{
 		InputComponent->BindAction( "Fire", IE_Pressed, this, &AMannequin::PullTrigger );
+		InputComponent->BindAction( "Fire", IE_Released, this, &AMannequin::TriggerRelease );
 	}
 
 	maxHealth = currentHealth;
@@ -72,7 +73,6 @@ void AMannequin::BeginPlay()
 void AMannequin::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 // Called to bind functionality to input
@@ -93,6 +93,8 @@ void AMannequin::UnPossessed()
 		gun->AttachToComponent( GetMesh(), FAttachmentTransformRules( EAttachmentRule::SnapToTarget, true ), TEXT( "GripPoint" ) );
 	}
 }
+
+
 
 float AMannequin::GetCurrentHealthPercent()
 {
@@ -138,7 +140,29 @@ void AMannequin::ChangeWeapons( int32 index, float mouseScrollIndexAddition )
 	}
 }
 
-void AMannequin::PullTrigger()
+void AMannequin::Shoot()
 {
 	currentGun->OnFire();
+}
+
+void AMannequin::PullTrigger()
+{
+	if( currentGun->GetGunType() == EGunType::RIFLE )
+	{
+		firstShot = true;
+		if( firstShot )
+			Shoot();
+
+		GetWorldTimerManager().SetTimer( handle, this, &AMannequin::Shoot, currentGun->GetFireRate(), true );
+	}
+	else
+	{
+		Shoot();
+	}
+}
+
+void AMannequin::TriggerRelease()
+{
+	firstShot = false;
+	GetWorldTimerManager().ClearTimer( handle );
 }

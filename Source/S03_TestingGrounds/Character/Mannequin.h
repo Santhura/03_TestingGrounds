@@ -6,7 +6,7 @@
 #include "GameFramework/Character.h"
 #include "Mannequin.generated.h"
 
-
+class AGun;
 
 UCLASS()
 class S03_TESTINGGROUNDS_API AMannequin : public ACharacter
@@ -50,6 +50,13 @@ private:
 	float currentHealth = 100;
 
 	float maxHealth;
+	bool firstShot = false;
+	FTimerHandle handle;
+
+	
+
+
+	void Shoot();
 
 	UFUNCTION( BlueprintCallable, Category = "Health" )
 	float GetCurrentHealthPercent();
@@ -80,5 +87,7 @@ public:
 
 	UFUNCTION( BlueprintCallable, Category = "Input" )
 	void PullTrigger();
+	UFUNCTION( BlueprintCallable, Category = "Input" )
+	void TriggerRelease();
 	
 };

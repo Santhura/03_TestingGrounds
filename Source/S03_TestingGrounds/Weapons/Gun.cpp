@@ -73,7 +73,7 @@ void AGun::OnFire()
 				FP_MuzzleLocation->GetComponentLocation(),
 				endLocation,
 				FColor::Red,
-				false, 20.f, 0, 1
+				false, .1f, 0, 1
 			);
 
 			if( hitResult.GetActor() )

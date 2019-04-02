@@ -15,6 +15,15 @@ enum class EBodyParts : uint8
 	LOWERBODY
 };
 
+UENUM()
+enum class EGunType : uint8
+{
+	NONE,
+	RIFLE,
+	GRENATE_LAUNCHER
+
+};
+
 USTRUCT( BlueprintType )
 struct FBodyPartLists
 {
@@ -115,6 +124,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	void OnFire();
 
+	EGunType GetGunType()const { return gunType; };
+	float GetFireRate() const { return fireRate; }
+
 private:
 	UPROPERTY( EditDefaultsOnly, Category = "Ammo" )
 	int32 ammo = 20;
@@ -131,10 +143,14 @@ private:
 
 	UPROPERTY( EditDefaultsOnly, Category = "Gun" )
 	float ShootingRange = 100000;
+	UPROPERTY( EditDefaultsOnly, Category = "Gun" )
+		float fireRate = .1f;
 
 	UFUNCTION( BlueprintCallable, Category = "Body" )
 		void SetBodyPartList( FBodyPartLists newbodyPartLists ) { bodyPartLists = newbodyPartLists; }
 
+	UPROPERTY( EditDefaultsOnly, Category = "Gun")
+	TEnumAsByte<EGunType> gunType;
 
 	FBodyPartLists bodyPartLists;
 
