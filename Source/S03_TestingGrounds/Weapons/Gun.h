@@ -131,6 +131,10 @@ public:
 	float GetFireRate() const { return fireRate; }
 
 private:
+
+	UPROPERTY( EditDefaultsOnly, Category = "Projectile" )
+	class UParticleSystemComponent* beamTrail_P = nullptr;
+
 	UPROPERTY( EditDefaultsOnly, Category = "Ammo" )
 	int32 ammo = 20;
 	UPROPERTY( EditDefaultsOnly, Category = "Ammo" )
@@ -162,6 +166,8 @@ private:
 	EBodyParts GetBodyPartHit(FBodyPartLists searchBodyPart, FString bodyName ) const;
 
 	float GetRealDamage( FString bodyName ) const;
+
+	void DeactivateBeam()const;
 
 	class APlayerController* playerController;
 };

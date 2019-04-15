@@ -6,7 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "BallProjectile.generated.h"
 
-class UParticleSystem;
+class UParticleSystemComponent;
+class URadialForceComponent;
 
 UCLASS(config=Game)
 class ABallProjectile : public AActor
@@ -20,6 +21,8 @@ class ABallProjectile : public AActor
 	/** Projectile movement component */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	class UProjectileMovementComponent* ProjectileMovement;
+
+
 
 public:
 	ABallProjectile();
@@ -35,10 +38,20 @@ public:
 	/** Returns ProjectileMovement subobject **/
 	FORCEINLINE class UProjectileMovementComponent* GetProjectileMovement() const { return ProjectileMovement; }
 
+protected:
+	virtual void BeginPlay() override;
+
 private:
 	UPROPERTY( EditDefaultsOnly, Category = "Projectile" )
-		UParticleSystem* GrenateExplosion;
+		UParticleSystemComponent* impactExplosion = nullptr;
 
-	float timer = .5f;
+	UPROPERTY( EditDefaultsOnly, Category = "Components" )
+		URadialForceComponent* explosionForce = nullptr;
+
+	UFUNCTION( BlueprintCallable, Category = "explosion" )
+		void OnTimerExpire();
+
+	float projectileDamage = 80;
+	float destoryDelay = .5f;
 };
 

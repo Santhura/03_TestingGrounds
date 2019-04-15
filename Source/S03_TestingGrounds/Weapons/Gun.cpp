@@ -10,6 +10,7 @@
 #include "Engine/DecalActor.h"
 #include "Classes/Materials/MaterialInterface.h"
 #include "Classes/Particles/ParticleSystem.h"
+#include "Particles/ParticleSystemComponent.h"
 #include "Character/Mannequin.h"
 #include "Engine/Texture2D.h"
 
@@ -30,6 +31,10 @@ AGun::AGun()
 	FP_MuzzleLocation = CreateDefaultSubobject<USceneComponent>( TEXT( "MuzzleLocation" ) );
 	FP_MuzzleLocation->SetupAttachment( FP_Gun );
 	FP_MuzzleLocation->SetRelativeLocation( FVector( 0.2f, 48.4f, -10.6f ) );
+
+	beamTrail_P = CreateDefaultSubobject< UParticleSystemComponent>( FName( "Beam" ) );
+	beamTrail_P->AttachToComponent( RootComponent, FAttachmentTransformRules::KeepRelativeTransform );
+	beamTrail_P->bAutoActivate = false;
 
 	// Default offset from the character location for projectiles to spawn
 	GunOffset = FVector( 100.0f, 0.0f, 10.0f );
@@ -57,49 +62,54 @@ void AGun::OnFire()
 	UWorld* const World = GetWorld();
 	if( ammo > 0 )
 	{
-		if( World != NULL )
+		if( gunType == EGunType::RIFLE )
 		{
-			if( P_muzzleFlash == nullptr ) return;
-
-			UGameplayStatics::SpawnEmitterAtLocation( GetWorld(), P_muzzleFlash, FP_MuzzleLocation->GetComponentLocation(), FRotator(), true );
-
-			FHitResult hitResult;
-
-			FVector endLocation = isHoldingByPlayer ? GetEndLineTraceFromFPCamera() : GetEndLineLocation();
-			World->LineTraceSingleByChannel( hitResult, FP_MuzzleLocation->GetComponentLocation(), endLocation, ECollisionChannel::ECC_Camera );
-			
-			DrawDebugLine(
-				GetWorld(),
-				FP_MuzzleLocation->GetComponentLocation(),
-				endLocation,
-				FColor::FromHex( "#D3D3D3" ),
-				false, .2f, 0, 1
-			);
-
-			if( hitResult.GetActor() )
+			if( World != NULL )
 			{
-				if( hitResult.GetActor()->GetName().Contains( "BP_Character" ) || hitResult.GetActor()->GetName().Contains( "player" ) )
-				{
-					UGameplayStatics::SpawnEmitterAtLocation( GetWorld(), P_hit, hitResult.Location, hitResult.ImpactPoint.Rotation(), true );
-					damage = GetRealDamage( hitResult.BoneName.ToString() );
-					UGameplayStatics::ApplyPointDamage( hitResult.GetActor(), damage, hitResult.Normal, hitResult, nullptr, nullptr, NULL );
-				}
-				else
-				{
-					UGameplayStatics::SpawnEmitterAtLocation( GetWorld(), P_bulletImpact, hitResult.Location, hitResult.ImpactPoint.Rotation(), true );
-					ADecalActor* decal = GetWorld()->SpawnActor<ADecalActor>( hitResult.Location, hitResult.ImpactPoint.Rotation() );
+				if( P_muzzleFlash == nullptr ) return;
 
-					if( P_bulletImpact == nullptr ) { return; }
+				UGameplayStatics::SpawnEmitterAtLocation( GetWorld(), P_muzzleFlash, FP_MuzzleLocation->GetComponentLocation(), FRotator(), true );
+				
 
-					if( decal )
+				FHitResult hitResult;
+
+				FVector endLocation = isHoldingByPlayer ? GetEndLineTraceFromFPCamera() : GetEndLineLocation();
+				World->LineTraceSingleByChannel( hitResult, FP_MuzzleLocation->GetComponentLocation(), endLocation, ECollisionChannel::ECC_Camera );
+				
+				beamTrail_P->Activate();
+				beamTrail_P->SetBeamSourcePoint( 0, FP_MuzzleLocation->GetComponentLocation(), 0 );
+				beamTrail_P->SetBeamTargetPoint( 0, hitResult.Location, 0 );
+					
+
+				if( hitResult.GetActor() )
+				{
+					if( hitResult.GetActor()->GetName().Contains( "BP_Character" ) || hitResult.GetActor()->GetName().Contains( "player" ) )
 					{
-						decal->SetDecalMaterial( decalMaterial );
-						decal->SetLifeSpan( 5.0f );
-						decal->GetDecal()->DecalSize = FVector( 12, 12, 12 );
+						UGameplayStatics::SpawnEmitterAtLocation( GetWorld(), P_hit, hitResult.Location, hitResult.ImpactPoint.Rotation(), true );
+						damage = GetRealDamage( hitResult.BoneName.ToString() );
+						UGameplayStatics::ApplyPointDamage( hitResult.GetActor(), damage, hitResult.Normal, hitResult, nullptr, nullptr, NULL );
+					}
+					else
+					{
+						UGameplayStatics::SpawnEmitterAtLocation( GetWorld(), P_bulletImpact, hitResult.Location, hitResult.ImpactPoint.Rotation(), true );
+						ADecalActor* decal = GetWorld()->SpawnActor<ADecalActor>( hitResult.Location, hitResult.ImpactPoint.Rotation() );
+
+						if( P_bulletImpact == nullptr ) { return; }
+
+						if( decal )
+						{
+							decal->SetDecalMaterial( decalMaterial );
+							decal->SetLifeSpan( 5.0f );
+							decal->GetDecal()->DecalSize = FVector( 12, 12, 12 );
+						}
 					}
 				}
 			}
+			
+			FTimerHandle timer;
+			GetWorld()->GetTimerManager().SetTimer( timer, this, &AGun::DeactivateBeam, .1f, false );
 		}
+
 		if( ProjectileClass )
 		{
 			const FRotator SpawnRotation = FP_MuzzleLocation->GetComponentRotation();
@@ -132,6 +142,11 @@ void AGun::OnFire()
 		}
 		ammo--;
 	}
+}
+
+void AGun::DeactivateBeam() const
+{
+	beamTrail_P->Deactivate();
 }
 
 void AGun::RefillAmmo( int32 addAmmo )
@@ -191,6 +206,8 @@ float AGun::GetRealDamage(FString bodyName) const
 
 	return 0;
 }
+
+
 
 EBodyParts AGun::GetBodyPartHit(FBodyPartLists searchBodyPart, FString bodyName ) const
 {
